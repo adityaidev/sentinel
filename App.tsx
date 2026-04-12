@@ -6,7 +6,7 @@ import ReportView from './components/ReportView';
 import HistoryView from './components/HistoryView';
 import ComparisonView from './components/ComparisonView';
 import { WorkflowStats, AgentState, LogEntry, AgentRole } from './types';
-import { runRouterAgent, runHunterAgent, runScraperAgent, runAnalystAgent, runReporterAgent, runSocialAgent } from './services/geminiService';
+import { runRouterAgent, runHunterAgent, runScraperAgent, runAnalystAgent, runReporterAgent, runSocialAgent, saveReport, loadReport } from './services/geminiService';
 
 const INITIAL_STATS: WorkflowStats = {
   totalWorkflows: 0,
@@ -82,9 +82,34 @@ export default function App() {
   useEffect(() => {
     const savedStats = localStorage.getItem('sentinel_stats');
     if (savedStats) setStats(JSON.parse(savedStats));
-    
+
     const savedHistory = localStorage.getItem('sentinel_history');
     if (savedHistory) setHistory(JSON.parse(savedHistory));
+
+    // Load shared report from ?r=<hash>
+    const params = new URLSearchParams(window.location.search);
+    const hash = params.get('r');
+    if (hash) {
+      loadReport(hash)
+        .then((r) => {
+          setState({
+            workflowId: r.id,
+            status: 'completed',
+            currentAgent: null,
+            targetCompany: r.targetCompany,
+            analysisType: r.analysisType,
+            discoveredUrls: r.discoveredUrls,
+            extractedContent: '',
+            swotAnalysis: r.swotAnalysis,
+            finalReport: r.finalReport,
+            socialPost: r.socialPost || null,
+            logs: r.logs || [],
+            timestamp: r.createdAt,
+            shareHash: r.shareHash,
+          });
+        })
+        .catch((e) => console.warn('Failed to load shared report:', e));
+    }
   }, []);
 
   useEffect(() => {
@@ -242,18 +267,42 @@ export default function App() {
       };
 
       setState(completedState);
-      
-      // Add to history
+
+      // Add to history immediately (optimistic)
       setHistory(prev => [completedState, ...prev]);
 
       const endTime = performance.now();
       const executionTime = endTime - startTime;
-      
+
       setStats(prev => ({
         ...prev,
         avgExecutionTimeMs: (prev.avgExecutionTimeMs * (prev.totalWorkflows - 1) + executionTime) / prev.totalWorkflows,
         lastExecutionTimeMs: executionTime
       }));
+
+      // Persist to Supabase and mint a shareable hash (non-blocking for UX)
+      saveReport({
+        targetCompany: completedState.targetCompany,
+        analysisType: completedState.analysisType,
+        finalReport: completedState.finalReport || '',
+        swotAnalysis: completedState.swotAnalysis,
+        discoveredUrls: completedState.discoveredUrls,
+        socialPost: completedState.socialPost,
+        logs: completedState.logs,
+      })
+        .then((saved) => {
+          setState((prev) =>
+            prev.workflowId === newWorkflowId ? { ...prev, shareHash: saved.shareHash } : prev,
+          );
+          setHistory((prev) =>
+            prev.map((h) =>
+              h.workflowId === newWorkflowId ? { ...h, shareHash: saved.shareHash } : h,
+            ),
+          );
+        })
+        .catch((e) => {
+          console.warn('Report save failed (non-blocking):', e);
+        });
 
     } catch (error) {
       console.error(error);

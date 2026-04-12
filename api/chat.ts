@@ -34,14 +34,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   const t0 = performance.now();
   try {
     const ai = getClient();
-    const chat = ai.chats.create({
+    // Use direct generateContent so we can combine Google Search grounding
+    // with chat history - ai.chats.create doesn't expose tools config cleanly.
+    const contents = [
+      ...history.map((h) => ({
+        role: h.role === 'model' ? 'model' : 'user',
+        parts: [{ text: h.content }],
+      })),
+      { role: 'user', parts: [{ text: message }] },
+    ];
+    const result = await ai.models.generateContent({
       model: MODELS.CHAT,
+      contents,
       config: {
-        systemInstruction: `${PROMPTS.CHAT}\n\nCONTEXT:\n${context}`,
+        systemInstruction: `${PROMPTS.CHAT}\n\nREPORT CONTEXT:\n${context}`,
+        tools: [{ googleSearch: {} }],
       },
-      history: history.map((h) => ({ role: h.role, parts: [{ text: h.content }] })),
     });
-    const result = await chat.sendMessage({ message });
     res.status(200).json({
       text: result.text || 'No response',
       log: {
