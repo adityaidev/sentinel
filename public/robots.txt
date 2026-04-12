@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-Sitemap: https://sentinel-intel.vercel.app/sitemap.xml
+Sitemap: https://sentinel-agents.vercel.app/sitemap.xml

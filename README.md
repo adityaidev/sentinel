@@ -35,7 +35,7 @@ Plus **Battle Mode**: pick any two saved reports to see a head-to-head radar cha
 
 ## Live
 
-**[sentinel-intel.vercel.app](https://sentinel-intel.vercel.app)**
+**[sentinel-agents.vercel.app](https://sentinel-agents.vercel.app)**
 
 ## Stack
 
