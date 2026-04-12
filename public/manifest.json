@@ -1,0 +1,14 @@
+{
+  "name": "Sentinel - Autonomous Competitive Intelligence",
+  "short_name": "Sentinel",
+  "description": "Autonomous competitive intelligence platform powered by Gemini. SWOT analysis, scored metrics, executive reports in minutes.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#000000",
+  "background_color": "#000000",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
