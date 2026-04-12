@@ -5,6 +5,41 @@ import remarkGfm from 'remark-gfm';
 import { AgentState } from '../types';
 import { sendChatMessage } from '../services/geminiService';
 
+const ShareButton: React.FC<{ shareHash?: string }> = ({ shareHash }) => {
+  const [copied, setCopied] = useState(false);
+  const disabled = !shareHash;
+  const handle = async () => {
+    if (!shareHash) return;
+    const url = `${window.location.origin}/?r=${shareHash}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      window.prompt('Copy this link', url);
+    }
+  };
+  return (
+    <button
+      onClick={handle}
+      disabled={disabled}
+      title={disabled ? 'Saving...' : 'Copy share link'}
+      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+        disabled
+          ? 'bg-sentinel-card border border-sentinel-border text-sentinel-muted/50 cursor-wait'
+          : copied
+            ? 'bg-sentinel-success/20 border border-sentinel-success text-sentinel-success'
+            : 'bg-sentinel-card border border-sentinel-border text-sentinel-muted hover:text-white hover:border-sentinel-accent/50'
+      }`}
+    >
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+      </svg>
+      {disabled ? 'Saving...' : copied ? 'Link copied' : 'Share Report'}
+    </button>
+  );
+};
+
 interface ReportViewProps {
   state: AgentState;
   onGenerateSocial: () => void;
@@ -327,14 +362,15 @@ const ReportView: React.FC<ReportViewProps> = ({ state, onGenerateSocial }) => {
                   <span className="text-sentinel-accent">{state.analysisType || 'GENERAL_INTEL'}</span>
               </div>
           </div>
-          <div className="flex gap-2">
-             <button 
+          <div className="flex gap-2 flex-wrap">
+             <ShareButton shareHash={state.shareHash} />
+             <button
                onClick={() => setActiveTab('dashboard')}
                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'dashboard' ? 'bg-white text-black' : 'bg-sentinel-card border border-sentinel-border text-sentinel-muted hover:text-white'}`}
              >
                 Visual Intelligence
              </button>
-             <button 
+             <button
                onClick={() => setActiveTab('report')}
                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'report' ? 'bg-white text-black' : 'bg-sentinel-card border border-sentinel-border text-sentinel-muted hover:text-white'}`}
              >
