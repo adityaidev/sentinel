@@ -148,7 +148,7 @@ const SwotCard = ({ title, items, type }: { title: string, items: string[], type
 };
 
 // --- CHAT INTERFACE COMPONENT ---
-const ReportChat = ({ context }: { context: string; company: string }) => {
+const ReportChat = ({ context, company }: { context: string; company: string }) => {
   const [messages, setMessages] = useState<{ role: 'user' | 'model', text: string }[]>([]);
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
