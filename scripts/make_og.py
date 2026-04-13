@@ -79,7 +79,7 @@ d.text(((W - (tbox[2] - tbox[0])) // 2, 498), tag, font=tag_font, fill=ACCENT)
 
 # Footer meta row
 meta_font = ImageFont.truetype(FONT_MONO, 16)
-left = "sentinel-agents.vercel.app"
+left = "sentinel.adityaai.dev"
 right = "GEMINI PRO · SUPABASE · VERCEL"
 d.text((80, H - 56), left, font=meta_font, fill=TEXT)
 d.text((W - 80, H - 56), right, font=meta_font, fill=MUTED, anchor="rm")
