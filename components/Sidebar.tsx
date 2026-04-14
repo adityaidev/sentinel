@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { WorkflowStats, LogEntry } from '../types';
+import BrandStamp from './BrandStamp';
 
 interface SidebarProps {
   stats: WorkflowStats;
@@ -10,6 +11,13 @@ interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+// Sibling projects in the adityaai.dev lab. Mirror this list from
+// adityaai.dev/src/lib/projects.ts; keep to live URLs, not repo links.
+const SIBLING_PROJECTS = [
+  { name: 'FRIDAY', href: 'https://friday.adityaai.dev', tag: '3D visual engine' },
+  { name: 'OpalServe', href: 'https://opalserve.adityaai.dev', tag: 'MCP control plane' },
+];
 
 const Sidebar: React.FC<SidebarProps> = ({ stats, logs, currentView, setCurrentView, isOpen, onClose }) => {
   return (
@@ -23,17 +31,18 @@ const Sidebar: React.FC<SidebarProps> = ({ stats, logs, currentView, setCurrentV
       `}
     >
       
-      {/* Mobile Header with Close Button */}
-      <div className="md:hidden flex items-center justify-end p-4 pb-0">
-         <button onClick={onClose} className="text-sentinel-muted hover:text-white">
+      {/* Brand + mobile close. Top row is shared across desktop / mobile. */}
+      <div className="flex items-center justify-between px-4 pt-4">
+         <BrandStamp />
+         <button onClick={onClose} className="md:hidden text-sentinel-muted hover:text-white">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
          </button>
       </div>
 
-      {/* Navigation - Moved to top since Logo is gone */}
-      <div className="p-4 pt-6 space-y-1">
+      {/* Navigation */}
+      <div className="p-4 pt-4 space-y-1">
         <button 
           onClick={() => setCurrentView('dashboard')}
           className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 group ${
@@ -111,6 +120,27 @@ const Sidebar: React.FC<SidebarProps> = ({ stats, logs, currentView, setCurrentV
             <div className="text-gray-300 leading-relaxed">{log.message}</div>
             {log.cost && <div className="text-sentinel-muted mt-1 opacity-40 text-[10px]">${log.cost.toFixed(5)}</div>}
           </div>
+        ))}
+      </div>
+
+      {/* Part of the lab - footer strip. */}
+      <div className="border-t border-sentinel-border px-4 py-3 space-y-2">
+        <div className="font-mono text-[9px] uppercase tracking-[0.22em] text-sentinel-muted/60">
+          Part of the lab
+        </div>
+        {SIBLING_PROJECTS.map((p) => (
+          <a
+            key={p.name}
+            href={p.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center justify-between text-xs text-sentinel-muted hover:text-white transition-colors py-1"
+          >
+            <span className="font-medium">{p.name}</span>
+            <span className="text-[10px] text-sentinel-muted/60 group-hover:text-sentinel-accent">
+              {p.tag} ↗
+            </span>
+          </a>
         ))}
       </div>
     </div>
