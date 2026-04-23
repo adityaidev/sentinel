@@ -34,6 +34,12 @@ export function calcCost(
   return i + o;
 }
 
+/** Only include internal telemetry when EXPOSE_LOGS is explicitly enabled */
+export function maybeLog(log: Record<string, unknown>): Record<string, unknown> {
+  if (process.env.EXPOSE_LOGS === 'true') return { log };
+  return {};
+}
+
 export const PROMPTS = {
   ROUTER: `You are the Router Agent for Sentinel, a competitive intelligence platform.
 Classify the user's intent and extract the target company.

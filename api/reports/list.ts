@@ -1,12 +1,17 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { handlePreflight, jsonError } from '../_shared/cors.js';
+import { handlePreflight, jsonError, clientIp } from '../_shared/cors.js';
+import { applyRateHeaders, checkRateLimit } from '../_shared/ratelimit.js';
 
 export const config = { maxDuration: 10 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (handlePreflight(req, res)) return;
   if (req.method !== 'GET') return jsonError(res, 'METHOD_NOT_ALLOWED', 'GET only', 405);
+
+  const rl = await checkRateLimit(clientIp(req), 'default');
+  applyRateHeaders(res, rl);
+  if (!rl.ok) return jsonError(res, 'RATE_LIMIT', 'List rate limit hit', 429, { retryAfterMs: rl.retryAfterMs });
 
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;

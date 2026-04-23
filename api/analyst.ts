@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Type } from '@google/genai';
 import { handlePreflight, jsonError, clientIp } from './_shared/cors.js';
 import { applyRateHeaders, checkRateLimit } from './_shared/ratelimit.js';
-import { MODELS, PROMPTS, calcCost, getClient } from './_shared/gemini.js';
+import { MODELS, PROMPTS, calcCost, getClient, maybeLog } from './_shared/gemini.js';
 
 export const config = { maxDuration: 60 };
 export const maxDuration = 60;
@@ -75,7 +75,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     }
     res.status(200).json({
       swot,
-      log: {
+      ...maybeLog({
         timestamp: new Date().toISOString(),
         agent: 'ANALYST',
         message: `SWOT generated. Avg score: ${Math.round(Object.values(swot.scores as Record<string, number>).reduce((a, b) => a + b, 0) / 5)}`,
@@ -83,7 +83,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         latencyMs: performance.now() - t0,
         tokenUsage: response.usageMetadata?.totalTokenCount || 0,
         cost: calcCost(MODELS.ANALYST, response.usageMetadata),
-      },
+      }),
     });
   } catch (e) {
     jsonError(res, 'UPSTREAM', (e as Error).message, 502);

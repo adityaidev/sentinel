@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { handlePreflight, jsonError, clientIp } from './_shared/cors.js';
 import { applyRateHeaders, checkRateLimit } from './_shared/ratelimit.js';
-import { MODELS, PROMPTS, calcCost, getClient } from './_shared/gemini.js';
+import { MODELS, PROMPTS, calcCost, getClient, maybeLog } from './_shared/gemini.js';
 
 export const config = { maxDuration: 30 };
 export const maxDuration = 30;
@@ -28,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     });
     res.status(200).json({
       report: response.text || `# Report for ${company}\n\n(empty response)`,
-      log: {
+      ...maybeLog({
         timestamp: new Date().toISOString(),
         agent: 'REPORTER',
         message: `Compiled executive report for ${company}`,
@@ -36,7 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         latencyMs: performance.now() - t0,
         tokenUsage: response.usageMetadata?.totalTokenCount || 0,
         cost: calcCost(MODELS.REPORTER, response.usageMetadata),
-      },
+      }),
     });
   } catch (e) {
     jsonError(res, 'UPSTREAM', (e as Error).message, 502);

@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { handlePreflight, jsonError, clientIp } from './_shared/cors.js';
 import { applyRateHeaders, checkRateLimit } from './_shared/ratelimit.js';
-import { MODELS, calcCost, getClient } from './_shared/gemini.js';
+import { MODELS, calcCost, getClient, maybeLog } from './_shared/gemini.js';
 
 export const config = { maxDuration: 30 };
 export const maxDuration = 30;
@@ -42,7 +42,7 @@ ${rawText}`,
       : 'Data extracted but no summary generated.';
     res.status(200).json({
       extractedContent: content,
-      log: {
+      ...maybeLog({
         timestamp: new Date().toISOString(),
         agent: 'SCRAPER',
         message: `Processed ${urls.length} sources`,
@@ -50,7 +50,7 @@ ${rawText}`,
         latencyMs: performance.now() - t0,
         tokenUsage: response.usageMetadata?.totalTokenCount || 0,
         cost: calcCost(MODELS.SCRAPER, response.usageMetadata),
-      },
+      }),
     });
   } catch (e) {
     jsonError(res, 'UPSTREAM', (e as Error).message, 502);
