@@ -41,5 +41,10 @@
     "typescript": "~5.8.2",
     "vite": "^6.2.0",
     "vitest": "^2.1.0"
+  },
+  "overrides": {
+    "undici": ">=7.24.1",
+    "protobufjs": ">=7.5.5",
+    "@fastify/busboy": ">=3.2.0"
   }
 }
